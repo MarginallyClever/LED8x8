@@ -21,15 +21,15 @@
 
 // these pin numbers start at 1, because I was stupid.
 // a list of cathode pins, unsorted
-//const int input[8] = { 1,2,5,7,8,9,12,14 };
+//const int cathode[8] = { 1,2,5,7,8,9,12,14 };
 // a list of cathode pins, sorted by top to bottom
-const int input[8] = { 9,14,8,12,1,7,2,5 };
+const int cathode[8] = { 9,14,8,12,1,7,2,5 };
 
 // these pin numbers start at 1, because I was stupid.
 // a list of anode pins, unsorted
-//const int output[8] = { 3,4,6,10,11,13,15,16 };
+//const int anode[8] = { 3,4,6,10,11,13,15,16 };
 // a list of anode pins, sorted by left to right
-const int output[8] = { 13,3,4,10,6,11,15,16 };
+const int anode[8] = { 13,3,4,10,6,11,15,16 };
 
 // translate the pins on the LED panel to pins on the Arduino
 const int arduino_to_grid[16] = { 13,12,11,10, 16,17,18,19, 2,3,4,5, 6,7,8,9 };
@@ -60,8 +60,8 @@ const int message[] = {
 // this figures out which pin on the LED that is,
 // then figures out which pin on the arduino matches that LED pin.
 // two translations!
-int out(int pin) {
-  return arduino_to_grid[output[pin]-1];
+int out(int x) {
+  return arduino_to_grid[anode[x]-1];
 }
 
 
@@ -69,8 +69,8 @@ int out(int pin) {
 // this figures out which pin on the LED that is,
 // then figures out which pin on the arduino matches that LED pin.
 // two translations!
-int in(int pin) {
-  return arduino_to_grid[input[pin]-1];
+int in(int y) {
+  return arduino_to_grid[cathode[y]-1];
 }
 
 
@@ -107,8 +107,8 @@ void setup() {
 
 // called over and over after setup()
 void loop() {
-  one_input_at_a_time();
-  one_output_at_a_time();
+  one_cathode_at_a_time();
+  one_anode_at_a_time();
   test_p();
   vhs_message();
 }
@@ -157,38 +157,46 @@ void test_p() {
 }
 
 
-// test the sequence of anodes and cathodes
-void one_input_at_a_time() {
+// test the sequence of cathodes
+// should light each row top to bottom
+void one_cathode_at_a_time() {
   int i,j;
 
   // 8s could be defined as NUM_INPUTS and NUM_OUTPUTS
+  // allow electricity to flow from all anodes
   for(j=0;j<8;++j) {
     digitalWrite(out(j),HIGH);
   }
+  // change one cathode at a time
   for(i=0;i<8;++i) {
     digitalWrite(in(i),LOW);
     delay(SCROLL_DELAY);
     digitalWrite(in(i),HIGH);
   }
+  // turn off all anodes
   for(j=0;j<8;++j) {
     digitalWrite(out(j),LOW);
   }
 }
 
 
-// test the sequence of anodes and cathodes
-void one_output_at_a_time() {
+// test the sequence of anodes
+// should light each column left to right
+void one_anode_at_a_time() {
   int i,j;
 
   // 8s could be defined as NUM_INPUTS and NUM_OUTPUTS
+  // allow electricity to flow into all cathodes
   for(j=0;j<8;++j) {
     digitalWrite(in(j),LOW);
   }
+  // change one anode at a time
   for(i=0;i<8;++i) {
     digitalWrite(out(i),HIGH);
     delay(SCROLL_DELAY);
     digitalWrite(out(i),LOW);
   }
+  // block all cathodes
   for(j=0;j<8;++j) {
     digitalWrite(in(j),HIGH);
   }
